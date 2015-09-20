@@ -26,7 +26,7 @@
 
   "dependencies": {
     "express": "~3.4.4",
-    "request": "~2.62.1"
+    "request": "~2.62.0"
   },
   "devDependencies": {},
   "bundleDependencies": [],
