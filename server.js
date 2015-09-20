@@ -95,9 +95,9 @@ var SampleApp = function() {
     self.createRoutes = function() {
         self.routes = { };
 
-        self.routes['/asciimo'] = function(req, res) {
-            var link = "http://i.imgur.com/kmbjB.png";
-            res.send("<html><body><img src='" + link + "'></body></html>");
+        self.routes['/call/receive'] = function(req, res) {
+            res.setHeader('Content-Type', 'application/xml');
+            res.send(self.cache_get('resp.xml'));
         };
 
         self.routes['/'] = function(req, res) {
@@ -156,4 +156,3 @@ var SampleApp = function() {
 var zapp = new SampleApp();
 zapp.initialize();
 zapp.start();
-
