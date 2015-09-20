@@ -1,8 +1,9 @@
 #!/bin/env node
 //  OpenShift sample Node application
 var express = require('express');
+var app = express();
 var fs      = require('fs');
-
+var request = require('request');
 
 /**
  *  Define the sample application.
@@ -23,7 +24,7 @@ var SampleApp = function() {
     self.setupVariables = function() {
         //  Set the environment variables we need.
         self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
-        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8880;
 
         if (typeof self.ipaddress === "undefined") {
             //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
@@ -96,8 +97,9 @@ var SampleApp = function() {
         self.routes = { };
 
         self.routes['/call/receive'] = function(req, res) {
+            self.ringTheSpace();
             res.setHeader('Content-Type', 'application/xml');
-            res.send(self.cache_get('resp.xml'));
+            res.send('<Response><Say>Someone will open the door!</Say></Response>');
         };
 
         self.routes['/'] = function(req, res) {
@@ -106,6 +108,25 @@ var SampleApp = function() {
         };
     };
 
+    self.ringTheSpace = function() {
+      console.log('ringing the space ...');
+      request.post(
+        'http://help.space.hackerspace.be/cgi-bin/sounds.sh',
+        { form: { SPEAK: 'Ding dong, someone down the elevator', SPEECHLANG: 'en' } },
+        function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+            console.log(body)
+          } else {
+            if (error) {
+              console.log("error " + error);
+            } else {
+              console.log("code " + response.statusCode);
+              console.log(response);
+            }
+          }
+        }
+      );
+    }
 
     /**
      *  Initialize the server (express) and create the routes and register
@@ -113,11 +134,9 @@ var SampleApp = function() {
      */
     self.initializeServer = function() {
         self.createRoutes();
-        self.app = express.createServer();
-
         //  Add handlers for the app (from the routes).
         for (var r in self.routes) {
-            self.app.get(r, self.routes[r]);
+            app.get(r, self.routes[r]);
         }
     };
 
@@ -140,7 +159,7 @@ var SampleApp = function() {
      */
     self.start = function() {
         //  Start the app on the specific interface (and port).
-        self.app.listen(self.port, self.ipaddress, function() {
+        app.listen(self.port, self.ipaddress, function() {
             console.log('%s: Node server started on %s:%d ...',
                         Date(Date.now() ), self.ipaddress, self.port);
         });
